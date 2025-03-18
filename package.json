@@ -1,0 +1,37 @@
+{
+  "name": "reviewproject",
+  "version": "1.0.0",
+  "description": "mernstack",
+  "main": "index.js",
+  "scripts": {
+    "server": "cd sesrv &&  nodemon index.js",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rohitsharma6377/reviewproject.git"
+  },
+  "keywords": [
+    "mern",
+    "stack",
+    "advanced",
+    "review",
+    "system"
+  ],
+  "author": "Rohit sharma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rohitsharma6377/reviewproject/issues"
+  },
+  "homepage": "https://github.com/Rohitsharma6377/reviewproject#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1",
+    "nodemon": "^3.1.9"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
