@@ -1,10 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import ratingSlice from "./reducers/ratingSlice";
+import ratingReducer from "./reducers/ratingSlice";
 
-export default configureStore(
-   {
-    reducer:{
-        rating:{ratingSlice}
-    }
-   }
-);
+const store = configureStore({
+  reducer: {
+    rating: ratingReducer,
+  },
+});
+
+export default store;
