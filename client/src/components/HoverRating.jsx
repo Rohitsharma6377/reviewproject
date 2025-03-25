@@ -1,23 +1,21 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addRatingToDB, fetchRatings } from "../store/reducers/ratingSlice";
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
-import { Card, CardContent, Typography, LinearProgress, Box } from "@mui/material";
+import { Card, CardContent, Typography, Box } from "@mui/material";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const labels = {
-  0.5: "Useless",
-  1: "Useless+",
-  1.5: "Poor",
-  2: "Poor+",
-  2.5: "Ok",
-  3: "Ok+",
-  3.5: "Good",
-  4: "Good+",
-  4.5: "Excellent",
-  5: "Excellent+",
+  1: "Useless",
+  2: "Poor",
+  3: "Ok",
+  4: "Good",
+  5: "Excellent",
 };
 
+// Function color gradient from red (bad) to green (good)
 function getColor(value) {
   const red = Math.max(255 - (value / 5) * 255, 0);
   const green = Math.min((value / 5) * 255, 255);
@@ -27,85 +25,88 @@ function getColor(value) {
 export default function HoverRating() {
   const dispatch = useDispatch();
   const { ratings, averageRating, ratingCounts } = useSelector((state) => state.rating);
+  const [hover, setHover] = useState(-1);
+  const [currentRating, setCurrentRating] = useState(averageRating || 0);
 
-  const [hover, setHover] = React.useState(-1);
-
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch(fetchRatings());
   }, [dispatch]);
+
+  useEffect(() => {
+    setCurrentRating(averageRating || 0);
+  }, [averageRating]);
 
   const handleRating = (newValue) => {
     if (newValue) {
       dispatch(addRatingToDB(newValue)).then(() => {
-        dispatch(fetchRatings()); // Refresh ratings after submission
+        dispatch(fetchRatings());
+        toast.success(`You rated ${newValue.toFixed(1)} stars!`, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "dark",
+        });
       });
     }
   };
 
   return (
-    <Card className="shadow-2xl border rounded-xl p-6 w-[400px] bg-black">
+    <Card className="shadow-2xl border rounded-xl w-[600px] bg-gradient-to-tr bg-gray-200">
       <CardContent className="flex flex-col items-center space-y-4">
         <div className="flex items-center">
           <Rating
             name="hover-feedback"
-            value={averageRating}
-            precision={0.5}
+            value={currentRating}
+            precision={0.1}
             size="large"
-            getLabelText={(value) => `${value} Star${value !== 1 ? "s" : ""}, ${labels[value]}`}
+            getLabelText={(value) => `${value} Star${value !== 1 ? "s" : ""}, ${labels[Math.round(value)]}`}
             onChange={(event, newValue) => handleRating(newValue)}
             onChangeActive={(event, newHover) => setHover(newHover)}
             icon={
               <StarIcon
                 className="transition-colors duration-300"
                 style={{
-                  color: getColor(hover !== -1 ? hover : averageRating),
-                  fontSize: "2rem",
+                  color: getColor(hover !== -1 ? hover : currentRating),
+                  fontSize: "3rem",
                 }}
               />
             }
-            emptyIcon={<StarIcon style={{ opacity: 0.3, fontSize: "2rem" }} />}
+            emptyIcon={<StarIcon style={{ opacity: 0.3, fontSize: "3rem" }} />}
           />
-          {averageRating > 0 && (
+          {ratings.length > 0 && (
             <Typography
-              variant="body2"
-              className="ml-3 font-semibold text-gray-800"
-              style={{ color: getColor(hover !== -1 ? hover : averageRating) }}
+              variant="h6"
+              className="text-lg font-semibold text-center ml-12"
+              style={{ color: getColor(hover !== -1 ? hover : currentRating) }}
             >
-              {labels[hover !== -1 ? hover : averageRating]}
+              {ratings.length > 0
+                ? `Avg: ${Number(averageRating || 0).toFixed(1)} ⭐ (${ratings.length} votes)`
+                : "No ratings yet"}
             </Typography>
           )}
         </div>
 
-        <Typography
-          variant="h6"
-          className="text-lg font-semibold text-center"
-          style={{ color: getColor(hover !== -1 ? hover : averageRating) }}
-        >
-          {ratings.length > 0
-            ? `Average Rating: ${averageRating.toFixed(1)} stars (${ratings.length} votes)`
-            : "No ratings yet"}
-        </Typography>
-
-        <Box className="w-full space-y-3">
-          {Object.keys(ratingCounts)
-            .reverse()
-            .map((star) => (
-              <div key={star} className="flex items-center">
-                <Typography className="text-sm font-medium text-gray-700 w-8">{star} stars</Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={ratings.length > 0 ? (ratingCounts[star] / ratings.length) * 100 : 0}
-                  className="flex-1 h-3 rounded-lg overflow-hidden"
-                  sx={{
-                    "& .MuiLinearProgress-bar": {
-                      background: "linear-gradient(to right, #ff8c00, #ffd700)",
-                    },
-                    backgroundColor: "#f3f4f6",
-                  }}
-                />
-                <Typography className="ml-2 text-xs text-gray-600">{ratingCounts[star]} votes</Typography>
+        <Box className="w-full space-y-3 flex flex-col items-center">
+          {[5, 4, 3, 2, 1].map((star) => {
+            const filledStars = (ratingCounts[star] || 0).toFixed(1);
+            return (
+              <div key={star} className="flex items-center space-x-2">
+                <Typography className="text-2xl font-bold text-black space-x-2 px-6">{filledStars}</Typography>
+                <Box className="flex relative">
+                  <Rating
+                    value={star}
+                    precision={0.1}
+                    readOnly
+                    icon={<StarIcon style={{ fontSize: "3rem", color: getColor(star) }} />}
+                    emptyIcon={<StarIcon style={{ fontSize: "3rem", opacity: 0.3 }} />}
+                  />
+                </Box>
               </div>
-            ))}
+            );
+          })}
         </Box>
       </CardContent>
     </Card>
