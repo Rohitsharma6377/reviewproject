@@ -22,7 +22,7 @@ router.post("/add", async (req, res) => {
   }
 });
 
-// ✅ Get all ratings & calculate average
+// Get all ratings & calculate average
 router.get("/all", async (req, res) => {
   try {
     const ratings = await Rating.find();

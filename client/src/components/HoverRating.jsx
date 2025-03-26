@@ -15,7 +15,7 @@ const labels = {
   5: "Excellent",
 };
 
-// Function color gradient from red (bad) to green (good)
+// Function to get a color gradient from red (bad) to green (good)
 function getColor(value) {
   const red = Math.max(255 - (value / 5) * 255, 0);
   const green = Math.min((value / 5) * 255, 255);
@@ -54,9 +54,9 @@ export default function HoverRating() {
   };
 
   return (
-    <Card className="shadow-2xl border rounded-xl w-[600px] bg-gradient-to-tr bg-gray-200">
+    <Card className="shadow-2xl border rounded-xl w-[600px] bg-green-100 p-4">
       <CardContent className="flex flex-col items-center space-y-4">
-        <div className="flex items-center">
+        <div className="flex flex-col items-center">
           <Rating
             name="hover-feedback"
             value={currentRating}
@@ -76,6 +76,7 @@ export default function HoverRating() {
             }
             emptyIcon={<StarIcon style={{ opacity: 0.3, fontSize: "3rem" }} />}
           />
+
           {ratings.length > 0 && (
             <Typography
               variant="h6"
@@ -87,23 +88,30 @@ export default function HoverRating() {
                 : "No ratings yet"}
             </Typography>
           )}
+          {/* Hover Label for Rating */}
+          <Typography
+            variant="h6"
+            className="text-lg font-semibold mt-2"
+            style={{ color: getColor(hover !== -1 ? hover : currentRating) }}
+          >
+            {hover !== -1 ? labels[Math.round(hover)] : labels[Math.round(currentRating)]}
+          </Typography>
         </div>
 
+        {/* Star Rating Breakdown */}
         <Box className="w-full space-y-3 flex flex-col items-center">
           {[5, 4, 3, 2, 1].map((star) => {
-            const filledStars = (ratingCounts[star] || 0).toFixed(1);
+            const filledStars = ratingCounts[star] || 0;
             return (
-              <div key={star} className="flex items-center space-x-2">
-                <Typography className="text-2xl font-bold text-black space-x-2 px-6">{filledStars}</Typography>
-                <Box className="flex relative">
-                  <Rating
-                    value={star}
-                    precision={0.1}
-                    readOnly
-                    icon={<StarIcon style={{ fontSize: "3rem", color: getColor(star) }} />}
-                    emptyIcon={<StarIcon style={{ fontSize: "3rem", opacity: 0.3 }} />}
-                  />
-                </Box>
+              <div key={star} className="flex items-center space-x-2 w-full justify-center">
+                <Typography className="text-lg font-bold text-black px-4">{filledStars}</Typography>
+                <Rating
+                  value={star}
+                  precision={0.1}
+                  readOnly
+                  icon={<StarIcon style={{ fontSize: "2rem", color: getColor(star) }} />}
+                  emptyIcon={<StarIcon style={{ fontSize: "2rem", opacity: 0.3 }} />}
+                />
               </div>
             );
           })}
